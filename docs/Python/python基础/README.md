@@ -1111,7 +1111,133 @@ test()
 #locals = {},globals = {'__name__': '__main__', '__doc__': None, '__package__': None, '__loader__': <_frozen_importlib_external.SourceFileLoader object at 0x000002352A903970>, '__spec__': None, '__annotations__': {}, '__builtins__': <module 'builtins' (built-in)>, '__file__': 'd:\\Code\\py\\test.py', '__cached__': None, 'word': 'hi', 'test': <function test at 0x000002352A907F70>}
 ```
 
++ sort方法
+
+```python
+students = [
+    {'name': 'zhangsan', 'age': 18, 'score': 98, 'height': 180},
+    {'name': 'lisi', 'age': 20, 'score': 95, 'height': 181},
+    {'name': 'wangwu', 'age': 19, 'score': 90, 'height': 182},
+    {'name': 'zhaoliu', 'age': 22, 'score': 91, 'height': 183},
+]
+# 字典和字典之间不能使用比较运算
+# sort方法需要传递参数 key 指定比较规则，key 参数类型是函数
+students.sort(key=lambda ele: ele['score'])  # 按照分数排序
+print(students)
+```
+
++ filter内置类
+
+```python
+# filter内置类--对可迭代对象进行过滤，得到的是一个filter对象
+# filter可以给定两个参数，第一个参数是函数，第二个参数是可迭代对象
+# filter结果是一个filter类型的对象，也是一个可迭代对象
+ages = [12, 23, 34, 54, 30, 19, 22]
+x = list(filter(lambda ele: ele > 18, ages))
+print(x)  # [23, 34, 54, 30, 19, 22]
+```
+
++ map内置类
+
+```python
+#map内置类--对列表内每个元素都执行一些相同的操作
+ages = [12, 23, 34, 54, 30, 19, 22]
+m = list(map(lambda ele: ele + 2, ages))
+print(m)  # [14, 25, 36, 56, 32, 21, 24]
+```
+
++ reduce内置类
+
+```python
+#作用为减项求和
+from functools import reduce
+scores = [100, 89, 76, 87]
+print(reduce(lambda ele1, ele2: ele1+ele2, scores))  # 352
+
+students = [
+    {'name': 'zhangsan', 'age': 18, 'score': 98, 'height': 180},
+    {'name': 'lisi', 'age': 20, 'score': 95, 'height': 181},
+    {'name': 'wangwu', 'age': 19, 'score': 90, 'height': 182},
+    {'name': 'zhaoliu', 'age': 22, 'score': 91, 'height': 183},
+]
+def bar(x, y):
+    return x+y['age']
+print(reduce(bar, students, 0))  # 79,最后一个参数0是对x的初始化
+```
+
++ all,any方法
+
+```python
+#all作用为将可迭代对象的所有元素都转换为布尔值，若其中有False，则结果是False
+#any方法与all结果相反，只要有一个是True，结果就是True
+print(all(['hello', 'good']))  # True
+print(all(['good', '']))  # False
+```
+
++ dir方法
+
+```python
+#列出对象所有的属性和方法
+nums = [1, 2, 3]
+print(dir(nums))  # ['__add__', '__class__', '__class_getitem__', '__contains__', '__delattr__', '__delitem__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getitem__', '__gt__', '__hash__', '__iadd__', '__imul__', '__init__', '__init_subclass__', '__iter__', '__le__', '__len__', '__lt__', '__mul__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__reversed__', '__rmul__', '__setattr__', '__setitem__', '__sizeof__', '__str__', '__subclasshook__', 'append', 'clear', 'copy', 'count', 'extend', 'index', 'insert', 'pop', 'remove', 'reverse', 'sort']
+```
+
++ 数学相关
+
+```python
+#abs方法--取绝对值
+print(abs(-9))  # 9
+#divmod方法--求两数相除的商和余数
+a, b = divmod(5, 2)
+print(a, b)  # 2 1
+#max--求最大数
+#min--求最小数
+#pow--求幂运算 等同于 **
+#round--四舍五入保留到指定小数位
+#sum--求和
+```
+
++ exit方法
+
+```python
+#以指定的退出码退出程序
+print(abs(-9))  # 9
+exit(100)
+```
+
+> ![](https://gitee.com/yao_zhimin/myimg/raw/master/20210113201203.png)
+
++ help方法
+
+```python
+#查看对象的帮助文档
+print(help(int))
+```
+
+> <img src="https://gitee.com/yao_zhimin/myimg/raw/master/20210113201409.png" style="zoom: 67%;" />
+
++ id--获取一个数据的内存地址
+
+```python
+a = 12
+print(f"id(a) = {id(a)}")  # id(a) = 1575615949456
+```
+
++ 判断对象相关
+
+```python
+#isinstance--判断一个对象是否是由一个类创建出来的
+#issubclass--判断一个类是否是另一个类的子类
+```
+
++ open--用来打开一个文件
++ repr--将一个对象转换为字符串
+
 ## 2.自定义函数
+
+> 1. 函数的三要素：函数名、参数、返回值
+> 2. 在python里，不允许函数重载，如果重名，后一个函数会覆盖前一个函数
+> 3. python里，函数名也可以理解为一个变量名
 
 - 基本用法
 
@@ -1133,12 +1259,24 @@ def say_hello(name='Jack', age=18):
 say_hello()  # 大家好，我是Jack,我今年18岁了
 say_hello('Tony')   # 大家好，我是Tony,我今年18岁了
 
-#缺省参数的使用
+#缺省参数的使用:传了参数就用传的参数，否则使用默认参数
 say_hello(age=20)   # 大家好，我是Jack,我今年20岁了
 
 #可变参数的使用
-
+def add(a, b, *args, mul=1, ** kwargs):  # a,b为未知参数,*args表示可变位置参数,mul为缺省参数,**kwargs为关键字参数
+    print(f"a={a},b={b}")  # 多出来的可变位置参数会以元组的形式保存到args里
+    print(f"args={args}")
+    print(f"kwargs={kwargs}")  # 多出来的关键字参数会以字典的形式保存
+    c = a+b
+    for arg in args:
+        c += arg
+    return c * mul
+print(add(1, 3, x=1, y='g'))
+print("-------------")
+print(add(3, 4, 5, 6, 7, 6, mul=2))
 ```
+
+>  ![](https://gitee.com/yao_zhimin/myimg/raw/master/20210113180034.png)
 
 - 函数的返回值
 
@@ -1155,8 +1293,8 @@ print(add(1, 2)**4) # 81
 def test(a, b):
     x = a//b
     y = a % b
-    # return[x,y]
-    # return{'x':x,'y':y}
+    # return[x,y]	返回一个列表
+    # return{'x':x,'y':y}	返回一个字典
     return x, y  # 一般用这个，就是一个元组
 result = test(3, 5)
 print(f"商是{result[0]},余数是{result[1]}") #商是0,余数是3
@@ -1166,11 +1304,174 @@ print(f"商是{result[0]},余数是{result[1]}") #商是0,余数是3
 
 ```python
 #在python中，只有函数能够分隔作用域
-word = '你好'
+word = '你好'	#全局变量
 def test():
+    a = 12	#局部变量，只能在函数内部使用
     # 使用global对变量进行声明，可以通过函数修改全局变量的值
     global word
     word = 'hi'
 test()
 print(word)  # hi
 ```
+
++ 可变类型和不可变类型
+
+```python
+def test(a):
+    a = 100
+def demo(nums):
+    nums[0] = 10
+x = 1
+test(x)
+print(x)  # 1
+y = [3, 5, 6, 8, 2]
+demo(y)
+print(y)  # [10, 5, 6, 8, 2]
+```
+
++ 递归函数的使用
+
+```python
+# 简单来说，递归就是函数内部调用自己
+# 递归最重要的就是找到出口(停止的条件)
+# break语句只能用于循环语句，不能用于递归
+def get_sum(n):
+    if n == 0:
+        return 0
+    return get_sum(n-1) + n
+print(get_sum(10))  # 55
+```
+
++ 匿名函数的使用
+
+```python
+# 除了使用 def 关键字定义一个函数以外，我们还能用 lambda 表达式定义一个函数
+# 匿名函数，用来表达一个简单的函数，函数调用的次数很少，基本上就是调用一次
+# 调用匿名函数的两种形式：
+# 1.给它定义一个名字(很少这样使用)
+def mul(a, b): return a + b
+print(mul(1, 2))  # 3
+# 2.把这个函数当作一个参数传给另一个函数使用(使用场景较多)
+def calc(a, b, fn):
+    return fn(a, b)
+x1 = calc(1, 2, lambda x, y: x+y)
+x2 = calc(2, 3, lambda x, y: x-y)
+x3 = calc(1, 2, lambda x, y: x*y)
+x4 = calc(2, 3, lambda x, y: x/y)
+print(x1, x2, x3, x4)   # 3 -1 2 0.6666666666666666
+```
+
++ 高阶函数
+
+  1. 一个函数作为另一个函数的返回值
+  2. 一个函数作为另一个函数的参数
+  3. 函数内部再定义一个函数
+
+  ```python
+  #闭包：如果在一个内部函数里，对在外部作用域（但不是全局作用域）的变量进行引用，那么内部函数就被认为是闭包
+  def outer():
+      x = 10
+      def inner():
+          nonlocal x  # 在内部函数修改外部函数的局部变量
+          y = x + 1
+          print(f'y in inner = {y}')
+          x = 20
+      return inner
+  outer()()  # y in inner = 11
+  
+  #计算一段代码的执行时间
+  
+  ```
+
+  
+
+# 六、模块操作
+
+> 模块：在python里一个py文件，就可以理解为一个模块
+>
+> 不是所有的py文件都能作为一个模块来导入
+>
+> 如果想让一个py文件能够被导入，模块名字必须要遵守命名规则
+
+## 1.内置模块的使用
+
++ 导入模块
+
+```python
+import time	# 使用 import 模块名直接导入一个模块
+print(time.time())
+
+from random import randint	# from 模块名 import 函数名，导入一个模块里的方法
+randint(0,2)
+
+from math import *	# from 模块名 import *，导入一个模块里的"所有"方法和变量
+print(pi)
+
+import datetime as dt	# 导入一个模块并给这个模块起一个别名
+print(dt.MAXYEAR)
+
+from copy import deepcopy as dp	# from 模块名 import 函数名 as 别名
+dp(['hello', 'good'.'hi'], [1, 2, 3], 'hi')
+```
+
++ 常见的内置模块
+
+```python
+# os模块(OperationSystem)--用来调用操作系统里的方法
+import os
+# os.name--获取操作系统的名字   Windows==>nt  非Windows==>posix
+print(os.name)  # nt
+# os.sep--路径的分隔符  Windows==>\  非Windows==>/
+print(os.sep)  # \
+# os.path--文件路径相关方法
+print(os.path.abspath('test.py'))  # 获取文件的绝对路径 d:\Code\py\test.py
+print(os.path.isdir('py'))  # 判断是否是文件夹
+print(os.path.isfile('py'))     # 判断是否是文件
+print(os.path.exists('test.py'))    # 判断是否存在
+filename = '2021.01.13.demo.py'
+print(os.path.splitext(filename))  # ('2021.01.13.demo', '.py')
+print(os.getcwd())  # 拿到文件所在目录  d:\Code\py
+
+
+# random模块--用来生成一个随机数
+import random
+# randint(a, b)--用来生成[a,b]的随机整数
+print(random.randint(2, 9))
+# random()--用来生成[0,1)的随机浮点数
+print(random.random())
+# randrange(a, b)--用来生成[a,b)的随机整数
+print(random.randrange(2, 9))
+# choice()--用来在可迭代对象里随机抽取一个数据
+print(random.choice(['zhangsan', 'lisi', 'jack', 'tony']))
+# sample(iter,n)--用来在可迭代对象里随机抽取n个数据
+print(random.sample(['zhangsan', 'lisi', 'jack', 'tony'], 2))
+```
+
+## 2.第三方模块的使用
+
++ 下载第三方模块
+
+> 通过 pip install 模块名 可以下载第三方模块
+
++ 查看已下载的第三方模块
+
+> pip list
+
++ 使用第三方模块
+
+> import 第三方模块名
+
++ 卸载第三方模块
+
+> pip uninstall 模块名 
+
+## 3.使用自定义模块
+
+> 如果一个py文件想要当做一个模块被导入，文件名一定要遵守命名规范
+>
+> 导入一个模块，就能使用这个模块里的变量和方法了
+
+# 七、文件操作
+
+# 八、面向对象部分
+
