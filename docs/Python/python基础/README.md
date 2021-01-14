@@ -273,6 +273,12 @@ name = 'zhangsan'
 print(f"大家好，我是{name},我今年{age}岁了")	#大家好，我是zhangsan,我今年18岁了
 ```
 
++ 正则表达式
+
+```python
+
+```
+
 ## 4.列表类型(list)
 
 - 基本使用
@@ -1472,6 +1478,135 @@ print(random.sample(['zhangsan', 'lisi', 'jack', 'tony'], 2))
 > 导入一个模块，就能使用这个模块里的变量和方法了
 
 # 七、文件操作
+
++ 打开和关闭文件
+
+```python
+# python里使用 open 内置函数打开并操作一个文件
+# open 参数介绍
+# file: 用来指定打开的文件(不是文件名，而是文件的路径)
+# mode: 打开文件的模式，默认是 r(只读)
+# encoding: 打开文件时的编码方式，默认为gbk(windows)
+
+# open 函数会有一个返回值，表示打开的文件对象
+file = open('xxx.txt', encoding="utf-8")
+print(file.read())  # 今天天气好晴朗(xxx.txt文件中的内容)
+file.close()    # 操作完成，关闭文件
+```
+
++ 文件路径详解
+
+```python
+#1.绝对路径--从电脑盘符开始的路径
+# 第一种方式
+file = open('D:\\Code\\py\\xxx.txt', encoding="utf-8")
+# 第二种方式
+file = open(r'D:\Code\py\xxx.txt', encoding="utf-8")
+# 第三种方式--推荐使用
+file = open('D:/Code/py/xxx.txt', encoding="utf-8")
+
+#2.相对路径(用的更多)--当前文件所在的文件夹开始的路径
+# ./ 可以省略不写，表示当前文件夹
+file = open('xxx.txt', encoding="utf-8")
+# ../ 回到上一级
+file = open('../xxx.txt', encoding="utf-8")
+```
+
++ 文件的打开方式详解
+
+```python
+# mode---文件的打开方式
+# r(默认方式):只读，打开文件后，只能读取，不能写入；如果文件不存在，会报错
+# w:只写，打开文件后，只能写入，不能读取。如果文件存在，会覆盖；如果文件不存在，会创建新文件
+# b:以二进制形式打开文件    rb:以二进制读取  wb:以二进制写入
+# a:追加模式，会在文件最后追加内容。如果文件不存在，会创建文件；如果文件存在，会追加
+# r+:可读可写   w+:可写可读 (用的很少)
+```
+
++ csv文件读写
+
+```python
+import csv
+file = open('demo.csv', 'w', encoding="utf8", newline='')
+# 写文件
+wr = csv.writer(file)
+wr.writerow(['name', 'age', 'score', 'city'])
+wr.writerow(['zhangsan', '19', '90', 'Beijing'])
+wr.writerow(['lisi', '19', '90', 'NewYork'])
+file.close()
+
+# 读文件
+file = open('aaa.csv', 'r', encoding="utf8", newline='')
+re = csv.reader(file)
+for data in re:
+    print(data)
+file.close()
+"""
+['姓名', '年龄', '性别', '成绩']
+['zhangsan', '23', 'male', '90']
+['lisi', '30', 'female', '89']
+['wangwu', '30', 'male', '67']
+"""
+```
+
++ 序列化和反序列化
+
+```python
+#序列化：将数据从内存持久化保存到硬盘的过程
+#反序列化：将数据从硬盘加载到内存的过程
+
+# json(只能保存一部分信息,作用是用来在不同的平台里传递数据)--本质就是字符串，区别在于 json 里要用双引号表示字符串
+# json 里将数据持久化有两个方法
+# 1.dumps--将数据装换成为字符串，不会将数据保存到文件里。
+names = ['zhangsan', 'lisi', 'jack', 'tony']
+x = json.dumps(names)  #
+print(x)  # ["zhangsan", "lisi", "jack", "tony"]
+file = open('names.txt', 'w', encoding='utf8')
+file.write(x)
+file.close()
+# 2.dump--将数据装换成为字符串的同时写入到指定文件
+names = ['zhangsan', 'lisi', 'jack', 'tony']
+file = open('names.txt', 'w', encoding='utf8')
+json.dump(names, file)
+file.close()
+# json 反序列化也有两个方法
+# 1.loads--将json字符串加载为python里的数据
+x = '{"name":"zhangsan","age":18}'
+p = json.loads(x)
+print(p['name'])  # zhangsan
+# 2.load--读取文件，把读取的内容加载成为python里的数据
+file = open('names.txt', 'r', encoding="utf8")
+y = json.load(file)
+print(y[0])  # zhangsan
+file.close()
+
+# pickle(用来将数据原封不动的转换成为二进制，但是这个二进制，只能在python里识别)--将python里任意的对象转换成为二进制
+import pickle
+# 序列化:
+# dumps--将python数据转换成为二进制
+names = ['zhangsan', 'lisi', 'jack', 'henry']
+b_names = pickle.dumps(names)
+file = open('names.txt', 'wb')
+file.write(b_names)  # 写入的是二进制，不是存文本
+file.close()
+# dump--将python数据转换成二进制，同时保存到指定文件
+names = ['zhangsan', 'lisi', 'jack', 'henry']
+file2 = open('names.txt', 'wb')
+pickle.dump(names, file2)
+# 反序列：
+# loads--将二进制加载成为python数据
+file1 = open('names.txt', 'rb')
+x = file1.read()
+y = pickle.loads(x)
+print(y)  # ['zhangsan', 'lisi', 'jack', 'henry']
+file1.close()
+# load--读取文件，并将文件的二进制内容加载为python数据
+file3 = open('names.txt', 'rb')
+x = pickle.load(file3)
+print(x)  # ['zhangsan', 'lisi', 'jack', 'henry']
+```
+
+
 
 # 八、面向对象部分
 
