@@ -273,12 +273,6 @@ name = 'zhangsan'
 print(f"大家好，我是{name},我今年{age}岁了")	#大家好，我是zhangsan,我今年18岁了
 ```
 
-+ 正则表达式
-
-```python
-
-```
-
 ## 4.列表类型(list)
 
 - 基本使用
