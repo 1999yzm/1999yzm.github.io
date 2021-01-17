@@ -248,7 +248,7 @@ print('over!!')
 
 ## 1. 正则
 
-### 1.1 正则表达式基础知识
+### 1.1 基础知识
 
 > 正则表达式的作用：对字符串进行检索和替换
 
@@ -467,7 +467,157 @@ def test(x):
 print(re.sub(r'\d+',test,x)) #hello68good126
 ```
 
-## 2. bs4
+### 1.2 案例
+
++ 爬取图片
+
+```python
+import requests
+
+url = 'https://pic.qiushibaike.com/system/pictures/12398/123987336/medium/LS63RJAVAYHG1QJH.jpg'
+# text==>字符串  content==>二进制  json()==>对象
+img_data = requests.get(url).content
+fp = open('./qiutu.jpg', 'wb')
+fp.write(img_data)
+fp.close()
+print('over!!')
+```
+
+> ![](https://gitee.com/yao_zhimin/myimg/raw/master/20210117143458.png)
+
++ 爬取糗事百科中糗图板块下所有的糗图图片
+
+```python
+import requests
+import re
+import os
+# 创建一个文件夹，用来保存所有的图片
+if not os.path.exists('./qiutuLibs'):
+    os.mkdir('./qiutuLibs')
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36 Edg/87.0.664.75'
+}
+
+# 设置一个通用url模板
+url = 'https://www.qiushibaike.com/imgrank/page/%d/'
+for pageNum in range(1, 3):
+    new_url = format(url % pageNum)
+
+    # 使用通用爬虫对url对应的一整张页面进行爬取
+    page_text = requests.get(url=new_url, headers=headers).text
+
+    # 使用聚焦爬虫将页面中所有的糗图进行解析
+    ex = '<div class="thumb">.*?<img src="(.*?)" alt.*?</div>'
+    img_src_list = re.findall(ex, page_text, re.S)
+    # print(img_src_list)
+    for src in img_src_list:
+        # 拼接出一个完整的url
+        src = 'https:' + src
+        # 请求到了图片的二进制数据
+        img_data = requests.get(url=src, headers=headers).content
+        # 生成图片名称
+        img_name = src.split('/')[-1]
+        # 图片存储的路径
+        img_path = './qiutuLibs/'+img_name
+        with open(img_path, 'wb') as fp:
+            fp.write(img_data)
+            print(img_name, '下载成功！！')
+```
+
+> ![](https://gitee.com/yao_zhimin/myimg/raw/master/20210117151151.png)
+
+## 2. bs4(python独有)
+
+### 2.1 基础知识
+
++ bs4数据解析的原理：
+  1. 实例化一个BeautifulSoup对象，并且将页面源码数据加载到该对象中
+  2. 通过调用BeautifulSoup对象中相关的属性或者方法进行标签定位和数据提取
+
++ 环境安装
+  1. pip install bs4
+  2. pip install lxml
+
++ 如何实例化一个BeautifulSoup对象
+
+  1. from bs4 import BeautifulSoup
+
+  2. 对象的实例化
+
+     1. 将本地的html文档中的数据加载到该对象中
+
+     ```python
+     fp = open('day02/sogou.html', 'r', encoding='utf-8')
+     soup = BeautifulSoup(fp, 'lxml')
+     ```
+
+     2. 将互联网上获取的页面源码加载到该对象中
+
+     ```python
+     page_text = response.text
+     soup = BeautifulSoup(page_text,'lxml')
+     ```
+
++ bs4中提供的用于数据解析的方法和属性
+
+  1. soup方法
+
+     1. soup.tagName:返回的是文档中第一次出现的tagName对应的标签
+     2. soup.find()
+        1. soup.find('tagName')等用于soup.tagName
+        2. 属性定位：soup.find('div', class_/id/attr='song')
+     3. soup.find_all('tagName'):返回符合要求的所有标签(列表)
+
+  2. select方法
+
+     1. select('某种选择器(id,class,标签...)')：返回的是一个列表
+     2. 层级选择器
+        1. soup.select('.tang >ul >li > a')[0] ：>表示的是一个层级
+        2. soup.select('.tang >ul a')[0] ：空格表示的是多个层级
+
+  3. 获取标签之间的文本数据：soup.a.text/string/get_text()
+
+     > text/get_text():可以获取某一个标签中所有的文本内容
+     >
+     > string：只可以获取该标签下面直系的文本内容
+
+  4. 获取标签中属性值：soup.a['href']
+
+### 2.2 案例
+
++ 爬取三国演义小说所有章节标题和内容
+
+```python
+import requests
+from bs4 import BeautifulSoup
+import sys
+import time
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36 Edg/87.0.664.75'
+}
+url = 'https://www.shicimingju.com/book/sanguoyanyi.html'
+page_text = requests.get(url=url, headers=headers).text
+# 在首页中解析出章节标题和详情页url
+# 1.实例化一个BeautifulSoup对象，需要将页面源码数据加载到该对象中
+soup = BeautifulSoup(page_text, 'lxml')
+li_list = soup.select('.book-mulu > ul > li')
+fp = open('./sanguo.txt', 'w', encoding='utf-8')
+for li in li_list:
+    title = li.a.string  # 章节标题
+    detail_url = 'https://www.shicimingju.com'+li.a['href']
+    # 对详情页发起请求，解析出章节内容
+    detail_page_text = requests.get(url=detail_url, headers=headers).text
+    # 解析出详情页中相关的章节内容
+    detail_soup = BeautifulSoup(detail_page_text, 'lxml')
+    div_tag = detail_soup.find('div', class_='chapter_content')
+    # 解析到章节内容
+    content = div_tag.get_text()
+    fp.write(title+':'+content+'\n')
+    print(title, '爬取成功！！')
+    time.sleep(1)	#设置休眠1秒，爬的太快容易被封ip
+```
+
+> ![](https://gitee.com/yao_zhimin/myimg/raw/master/20210117165554.png)
 
 ## 3. xpath
 
