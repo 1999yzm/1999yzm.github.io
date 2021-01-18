@@ -718,7 +718,7 @@ for li in li_list:
         print(img_name+'下载成功')
 ```
 
-> ![](../../../../../AppData/Roaming/Typora/typora-user-images/image-20210118114546231.png)
+> ![](https://gitee.com/yao_zhimin/myimg/raw/master/20210118131716.png)
 
 + 全国城市名称爬取
 
