@@ -800,3 +800,343 @@ for pageNum in range(1, 6):  # 下载前5页
 
 > ![](https://gitee.com/yao_zhimin/myimg/raw/master/20210118131217.png)
 
+# 四、requests 模块高级
+
+## 1.验证码
+
+> 验证码和爬虫的关系：验证码是一种反爬机制。通过识别验证码图片中的数据，用于模拟登陆操作
+>
+> 识别验证码的操作：
+>
+> 1. 人工肉眼识别(不推荐)
+> 2. 第三方自动识别(推荐)
+>    + 超级鹰平台
+
++ 识别古诗文网登录界面验证码
+
+  > 使用超级鹰平台识别验证码的编码流程：
+  >
+  > 1. 将验证码图片进行本地下载
+  > 2. 调用平台提供的示例代码进行识别
+
+```python
+# codeClass.py文件内容
+import requests
+from hashlib import md5
+class Chaojiying_Client(object):
+
+    def __init__(self, username, password, soft_id):
+        self.username = username
+        password = password.encode('utf8')
+        self.password = md5(password).hexdigest()
+        self.soft_id = soft_id
+        self.base_params = {
+            'user': self.username,
+            'pass2': self.password,
+            'softid': self.soft_id,
+        }
+        self.headers = {
+            'Connection': 'Keep-Alive',
+            'User-Agent': 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0)',
+        }
+
+    def PostPic(self, im, codetype):
+        """
+        im: 图片字节
+        codetype: 题目类型 参考 http://www.chaojiying.com/price.html
+        """
+        params = {
+            'codetype': codetype,
+        }
+        params.update(self.base_params)
+        files = {'userfile': ('ccc.jpg', im)}
+        r = requests.post('http://upload.chaojiying.net/Upload/Processing.php',
+                          data=params, files=files, headers=self.headers)
+        return r.json()
+
+    def ReportError(self, im_id):
+        """
+        im_id:报错题目的图片ID
+        """
+        params = {
+            'id': im_id,
+        }
+        params.update(self.base_params)
+        r = requests.post(
+            'http://upload.chaojiying.net/Upload/ReportError.php', data=params, headers=self.headers)
+        return r.json()
+
+    
+# gushiwen.py 文件内容
+import requests
+from lxml import etree
+from codeClass import Chaojiying_Client
+# 封装识别验证码图片的函数
+def getCodeText(imgPath, codeType):
+    chaojiying = Chaojiying_Client(
+        '1999yzm', 'yzm0205..', '911888')  # 用户中心>>软件ID 生成一个替换 96001
+    # 本地图片文件路径 来替换 a.jpg 有时WIN系统须要//
+    im = open(imgPath, 'rb').read()
+    # 1902 验证码类型  官方网站>>价格体系 3.4+版 print 后要加()
+    print(chaojiying.PostPic(im, codeType))
+    return chaojiying.PostPic(im, codeType)['pic_str']
+
+
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36 Edg/87.0.664.75'
+}
+url = 'https://so.gushiwen.cn/user/login.aspx?from=http://so.gushiwen.cn/user/collect.aspx'
+page_text = requests.get(url=url, headers=headers).text
+tree = etree.HTML(page_text)
+code_img_src = 'https://so.gushiwen.cn' + \
+    tree.xpath('//*[@id="imgCode"]/@src')[0]
+# print(cpde_img_src)
+img_data = requests.get(url=code_img_src, headers=headers).content
+# 将验证码图片保存到本地
+with open('day04/code.jpg', 'wb') as fp:
+    fp.write(img_data)
+# 进行图片识别
+code_text = getCodeText('day04/code.jpg', 1902)
+print('识别结果为：', code_text)
+```
+
+> ![](https://gitee.com/yao_zhimin/myimg/raw/master/20210119162907.png)
+
+## 2. cookie操作
+
++ 对人人网进行模拟登陆
+
+```python
+import requests
+from lxml import etree
+from codeClass import Chaojiying_Client
+# 封装识别验证码图片的函数
+def getCodeText(imgPath, codeType):
+    chaojiying = Chaojiying_Client(
+        '1999yzm', 'yzm0205..', '911888')  # 用户中心>>软件ID 生成一个替换 96001
+    # 本地图片文件路径 来替换 a.jpg 有时WIN系统须要//
+    im = open(imgPath, 'rb').read()
+    # 1902 验证码类型  官方网站>>价格体系 3.4+版 print 后要加()
+    # print(chaojiying.PostPic(im, codeType))
+    return chaojiying.PostPic(im, codeType)['pic_str']
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36 Edg/87.0.664.75'
+}
+# 1.对验证码进行识别，获取验证码图片的文字数据
+url = 'http://www.renren.com/'
+page_text = requests.get(url=url, headers=headers).text
+tree = etree.HTML(page_text)
+code_img_src = tree.xpath('//*[@id="verifyPic_login"]/@src')[0]
+code_img_data = requests.get(url=code_img_src, headers=headers).content
+with open('day04/code.jpg', 'wb') as fp:
+    fp.write(code_img_data)
+result = getCodeText('day04/code.jpg', 1902)
+print('识别结果为：', result)
+# 2.发送post请求
+login_url = 'http://www.renren.com/ajaxLogin/login?1=1&uniqueTimestamp=2021021744588'
+data = {
+    'email': '15231800205',
+    'icode': result,
+    'origURL': 'http://www.renren.com/home',
+    'domain': 'renren.com',
+    'key_id': '1',
+    'captcha_type': 'web_login',
+    'password': '4ae3271625ef347f84c84b2a7236a27796ad2c7f054679ee47dd2cbdd1c8199f',
+    'rkey': '26963d9aea69180f42743d576d4cf4d8',
+    'f': 'http%3A%2F%2Fwww.renren.com%2F',
+}
+response = requests.post(url=login_url, data=data, headers=headers)
+print(response.status_code)  # 是200则成功
+# # 3.对相应数据进行持久化存储
+# login_page_text = response.text
+# with open('day04/renren.html', 'w', encoding="utf-8") as fp:
+#     fp.write(login_page_text)
+# print('over!!')
+```
+
+> 没有请求到对应页面数据的原因：发起的第二次基于个人主页页面请求的时候，服务器端并不知道该请求是基于登陆状态下的请求
+>
+> cookie：用来让服务器端记录客户端的相关状态
+>
+> 1. 手动处理：通过抓包工具获取cookie值，将该值封装到headers中。(不建议)
+>
+> 2. 自动处理
+>
+>    1. cookie来源：模拟登陆post请求后，由服务器端创建
+>    2. session会话对象
+>       1. 作用：可以进行请求的发送。
+>       2. 如果请求过程中产生了cookie。则该cookie会被自动存储/携带在该session对象中
+>
+>    
+>
+>    1. 创建一个session对象：session = requests.Session()
+>    2. 使用session对象进行模拟登陆post请求的发送(cookie就会被存储在session对象中)
+>    3. session对象对个人主页对应的get请求进行发送(携带了cookie)
+
++ 爬取人人网当前用户的个人详情页数据
+
+```python
+import requests
+from lxml import etree
+from codeClass import Chaojiying_Client
+# 封装识别验证码图片的函数
+
+
+def getCodeText(imgPath, codeType):
+    chaojiying = Chaojiying_Client(
+        '1999yzm', 'yzm0205..', '911888')  # 用户中心>>软件ID 生成一个替换 96001
+    # 本地图片文件路径 来替换 a.jpg 有时WIN系统须要//
+    im = open(imgPath, 'rb').read()
+    # 1902 验证码类型  官方网站>>价格体系 3.4+版 print 后要加()
+    # print(chaojiying.PostPic(im, codeType))
+    return chaojiying.PostPic(im, codeType)['pic_str']
+
+
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36 Edg/87.0.664.75'
+}
+# 创建一个session对象
+session = requests.Session()
+
+# 1.对验证码进行识别，获取验证码图片的文字数据
+url = 'http://www.renren.com/'
+page_text = requests.get(url=url, headers=headers).text
+tree = etree.HTML(page_text)
+code_img_src = tree.xpath('//*[@id="verifyPic_login"]/@src')[0]
+code_img_data = requests.get(url=code_img_src, headers=headers).content
+with open('day04/code.jpg', 'wb') as fp:
+    fp.write(code_img_data)
+result = getCodeText('day04/code.jpg', 1902)
+print('识别结果为：', result)
+# 2.发送post请求
+login_url = 'http://www.renren.com/ajaxLogin/login?1=1&uniqueTimestamp=2021021744588'
+data = {
+    'email': '15231800205',
+    'icode': result,
+    'origURL': 'http://www.renren.com/home',
+    'domain': 'renren.com',
+    'key_id': '1',
+    'captcha_type': 'web_login',
+    'password': '4ae3271625ef347f84c84b2a7236a27796ad2c7f054679ee47dd2cbdd1c8199f',
+    'rkey': '26963d9aea69180f42743d576d4cf4d8',
+    'f': 'http%3A%2F%2Fwww.renren.com%2F',
+}
+# 使用session进行post请求的发送
+response = session.post(url=login_url, data=data, headers=headers)
+print(response.status_code)  # 是200则成功
+# # 3.对相应数据进行持久化存储
+# login_page_text = response.text
+# with open('day04/renren.html', 'w', encoding="utf-8") as fp:
+#     fp.write(login_page_text)
+# print('over!!')
+
+# 手动cookie处理：
+# headers = {
+#     'Cookie': 'anonymid=kk3qqxj1z1817t; depovince=GW; _r01_=1; JSESSIONID=abc8q9zQtJIbceJf7XzCx; ick_login=10b58b45-83bf-4bff-8005-4a35ee8ed6bb; taihe_bi_sdk_uid=682f94653b252b00b655d38430aa25f2; taihe_bi_sdk_session=35a4450c92398c86aff3bbbc9942598d; first_login_flag=1; ln_uact=15231800205; ln_hurl=http://hdn.xnimg.cn/photos/hdn221/20210119/1635/h_main_BGBL_9a13000ffed91986.jpg; jebecookies=e8497918-9287-405a-b67a-fb460ba69d47|||||; _de=94B00D67A10B117B8455FB9DE651E5F2; p=af941b1291d2bff9045146194874f0c16; t=485b68843769db4a9f20d3bb453f600b6; societyguester=485b68843769db4a9f20d3bb453f600b6; id=975780946; xnsid=e5b44edb; ver=7.0; loginfrom=null; wp_fold=0',
+#     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36 Edg/87.0.664.75'
+# }
+
+detail_url = 'http://www.renren.com/975780946/profile'
+# 使用携带cookie的session进行get请求的发送
+detail_page_text = session.get(url=detail_url, headers=headers).text
+with open('day04/A.html', 'w', encoding="utf_8") as fp:
+    fp.write(detail_page_text)
+```
+
+> ![](https://gitee.com/yao_zhimin/myimg/raw/master/20210119191810.png)
+
+## 3. 代理操作
+
+> 1. 什么是代理：代理服务器
+> 2. 代理的作用：破解封IP这种反爬机制。突破自身IP访问的限制。可以隐藏自身真实的IP。
+> 3. 代理相关的网站：
+>    1. 快代理
+>    2. 西祠代理
+>    3. www.goubanjia.com
+> 4. 代理ip的类型：
+>    1. http:应用到http协议对应的url中
+>    2. https应用到https协议对应的url中
+> 5. 代理IP的匿名度：
+>    1. 透明：服务器知道该次请求使用了代理，也知道请求对应的真实IP
+>    2. 匿名：服务器知道使用了代理，但不知道真实的IP
+>    3. 高匿：服务器不知道使用了代理，更不知道真实的IP
+> 6. 使用方法：在headers中加入proxies参数其类型是一个字典
+
+# 五、高性能异步爬虫
+
+> + 目的：在爬虫中使用异步实现高性能的数据爬取操作。
+> + 异步爬虫的方式
+>   1. 多线程，多进程(不建议)
+>      + 好处：可以为相关阻塞的操作单独开启线程或者进程，阻塞操作就可以异步执行
+>      + 弊端：无法无限制开启多线程或者多进程
+>   2. 线程池、进程池(适当使用)
+>      + 好处：我们可以降低系统对进程或者线程创建和销毁的一个频率，从而很好的降低系统的开销
+>      + 弊端：池中线程或进程的数量是有上限的
+>
+> 
+
++ 爬取梨视频的视频数据
+
+```python
+# 线程池处理的是阻塞且耗时的操作
+import requests
+from lxml import etree
+import random
+from multiprocessing.dummy import Pool
+import os
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36 Edg/87.0.664.75',
+    # 'Referer': 'https://www.pearvideo.com/video_1716666'
+}
+session = requests.Session()
+# 对下述url发起请求解析出视频详情页的url和视频的名称
+url = 'https://www.pearvideo.com/category_59'
+page_text = session.get(url=url, headers=headers).text
+tree = etree.HTML(page_text)
+li_list = tree.xpath('//ul[@id="listvideoListUl"]/li')
+video_list = []  # 存储所有视频的链接和名字
+if not os.path.exists('./videoLibs'):
+    os.mkdir('./videoLibs')
+for li in li_list:
+    contId = li.xpath('./div/a/@href')[0][-7:]
+    detail_url = 'https://www.pearvideo.com/videoStatus.jsp?contId=' + \
+        contId+'&mrd='+str(random.random())
+    name = li.xpath('./div/a/div[2]/text()')[0]+'.mp4'
+    # 对详情页发请求
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36 Edg/87.0.664.75',
+        'Referer': 'https://www.pearvideo.com/video_'+contId
+    }
+    detail_page_text = session.get(url=detail_url, headers=headers).json()
+    cont = 'cont-' + str(contId)
+    video_data = detail_page_text['videoInfo']['videos']['srcUrl']
+    video_url = video_data.replace(
+        video_data.split("-")[0].split("/")[-1], cont)
+    dic = {
+        'name': name,
+        'url': video_url
+    }
+    video_list.append(dic)
+# print(video_list)
+
+
+def get_video_data(dic):
+    url = dic['url']
+    print(dic['name'], "正在下载")
+    data = session.get(url=url, headers=headers).content
+    # 持久化存储操作
+    video_url = 'videoLibs/'+dic['name']
+    with open(video_url, 'wb') as fp:
+        fp.write(data)
+    print(dic['name'], "下载成功")
+
+
+# 使用线程池对视频数据进行请求(较为耗时的阻塞操作)
+pool = Pool(4)
+pool.map(get_video_data, video_list)
+pool.close()
+pool.join()
+```
+
+> ![](https://gitee.com/yao_zhimin/myimg/raw/master/20210119222547.png)
+
