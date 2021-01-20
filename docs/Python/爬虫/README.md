@@ -1064,18 +1064,190 @@ with open('day04/A.html', 'w', encoding="utf_8") as fp:
 
 # 五、高性能异步爬虫
 
-> + 目的：在爬虫中使用异步实现高性能的数据爬取操作。
-> + 异步爬虫的方式
->   1. 多线程，多进程(不建议)
->      + 好处：可以为相关阻塞的操作单独开启线程或者进程，阻塞操作就可以异步执行
->      + 弊端：无法无限制开启多线程或者多进程
->   2. 线程池、进程池(适当使用)
->      + 好处：我们可以降低系统对进程或者线程创建和销毁的一个频率，从而很好的降低系统的开销
->      + 弊端：池中线程或进程的数量是有上限的
+> 目的：在爬虫中使用异步实现高性能的数据爬取操作。
 >
-> 
+> + 异步爬虫的方式
+>   + **多线程，多进程(不建议)**
+>     + 好处：可以为相关阻塞的操作单独开启线程或者进程，阻塞操作就可以异步执行
+>     + 弊端：无法无限制开启多线程或者多进程
+>   + **线程池、进程池(适当使用)**
+>     + 好处：我们可以降低系统对进程或者线程创建和销毁的一个频率，从而很好的降低系统的开销
+>     + 弊端：池中线程或进程的数量是有上限的
+>   + **单线程+异步协程(推荐)**
+>     + enent_loop：时间循环，相当于一个无限循环，我们可以把一些函数注册到这个事件循环上，当满足某些条件的时候，函数就会被循环执行
+>     + corrutine：协程对象，我们可以将携程对象注册到事件循环中，它会被事件循环调用。我们可以使用
+>     + async关键字来定义一个方法，这个方法在调用时不会立即执行，而是返回一个协程对象
+>     + task：任务，它是对协程对象的进一步封装，包含了任务的各个状态
+>     + future：代表将来执行或还没有执行的任务，实际上和task没有本质区别
+>     + async：定义一个协程
+>     + await：用来挂起阻塞方法的执行
 
-+ 爬取梨视频的视频数据
+## 1. 基础知识
+
+### 1.1 协程
+
+> 协程不是计算机提供，程序员人工创造。通过一个线程实现代码块相互切换执行
+>
+> + 实现协程的方式
+>   + greenlet，早期模块
+>   + yield关键字
+>   + asyncio装饰器(python3.4之后)
+>   + async、await关键字(python3.5之后)【推荐】
+> + 协程的意义
+>   + 在一个线程中如果遇到IO等待时间，线程不会傻傻的等待，而是会利用空闲的时候再去干点其他事
+
++ greenlet实现协程
+
+```python
+from greenlet import greenlet
+def func1():
+    print(1)
+    gr2.switch()
+    print(2)
+    gr2.switch()
+def func2():
+    print(3)
+    gr1.switch()
+    print(4)
+gr1 = greenlet(func1)
+gr2 = greenlet(func2)
+gr1.switch()
+
+#output:1/3/2/4
+```
+
++ yield关键字实现协程
+
+```python
+def func1():
+    yield 1
+    yield from func2()
+    yield 2
+def func2():
+    yield 3
+    yield 4
+f1 = func1()
+for item in f1:
+    print(item)
+    
+#output:1/3/4/2
+```
+
++ asyncio装饰器实现协程
+
+> 遇到IO阻塞自动切换
+
+```python
+import asyncio
+@asyncio.coroutine
+def func1():
+    print(1)
+    yield from asyncio.sleep(2)
+    print(2)
+@asyncio.coroutine
+def func2():
+    print(3)
+    yield from asyncio.sleep(2)
+    print(4)
+tasks = [
+    asyncio.ensure_future(func1()),
+    asyncio.ensure_future(func2())
+]
+loop = asyncio.get_event_loop()
+loop.run_until_complete(asyncio.wait(tasks))
+
+#output:1/3/2/4
+```
+
++ async、await关键字实现协程
+
+```python
+import asyncio
+async def func1():
+    print(1)
+    await asyncio.sleep(2)
+    print(2)
+async def func2():
+    print(3)
+    await asyncio.sleep(2)
+    print(4)
+tasks = [
+    asyncio.ensure_future(func1()),
+    asyncio.ensure_future(func2())
+]
+loop = asyncio.get_event_loop()
+loop.run_until_complete(asyncio.wait(tasks))
+
+#output:1/3/2/4
+```
+
+### 1.2 异步编程
+
+> + 事件循环：理解为一个死循环，去检测并执行某些代码
+> + 协程函数定义：定义函数时  **`async def 函数名`** 
+> + 协程对象：执行 协程函数() 得到的一个协程对象
+>
+> ```python
+> import asyncio
+> async def func():
+>     pass
+> result = func()
+> 
+> # 注意：执行协程函数创建协程对象，函数内部代码不会执行
+> # 如果想要运行协程函数内部代码，必须要将协程对象交给事件循环来处理
+> import asyncio
+> async def func():
+>     pass
+> result = func()
+> # loop = asyncio.get_event_loop()
+> # loop.run_until_complete(result)
+> asyncio.run(result)  # python3.7之后
+> ```
+
++ await关键字
+
+> + await + 可等待的对象(协程对象、Future、Task对象 -> IO等待)
+>
+> + await就是等待对应的值得到结果之后再继续向下走
+
++ Task对象
+
+> + 作用：在事件循环中添加多个任务
+> + 创建Task对象：`asynicio.create_task(协程对象)`
+
+```python
+import asyncio
+async def func():
+    print(1)
+    await asyncio.sleep(2)
+    print(2)
+    return 'return'
+async def main():
+    print('main start')
+    task_list = {
+        asyncio.create_task(func(), name='n1'),
+        asyncio.create_task(func(), name='n2')
+    }
+    print('main end')
+    done, pending = await asyncio.wait(task_list, timeout=None)
+    print(done)
+asyncio.run(main())
+```
+
++ asyncio.Future对象
+
+> Task继承Future，Task对象内部await结果的处理是基于Future对象来的
+
++ concurrent.futures.Future对象
+
+> 使用线程池、进程池实现异步操作时用到的对象
+
++ 异步迭代器
+
+
+## 2. 案例
+
++ 使用线程池爬取梨视频的视频数据
 
 ```python
 # 线程池处理的是阻塞且耗时的操作
