@@ -1092,8 +1092,194 @@ with open('day04/A.html', 'w', encoding="utf_8") as fp:
 >   + greenlet，早期模块
 >   + yield关键字
 >   + asyncio装饰器(python3.4之后)
+>     + 遇到IO阻塞自动切换
 >   + async、await关键字(python3.5之后)【推荐】
+> + 协程的意义：在一个线程中如果遇到IO等待时间，线程不会傻傻的等，而是利用空闲的时候再去干点其他事
 
++ greenlet实现协程
+
+```python
+from greenlet import greenlet
+def func1():
+    print(1)
+    gr2.switch()
+    print(2)
+    gr2.switch()
+def func2():
+    print(3)
+    gr1.switch()
+    print(4)
+gr1 = greenlet(func1)
+gr2 = greenlet(func2)
+gr1.switch()
+
+# 1/3/2/4
+```
+
++ async & await 关键字实现协程
+
+```python
+import asyncio
+async def func1():
+    print(1)
+    await asyncio.sleep(2)
+    print(2)
+async def func2():
+    print(3)
+    await asyncio.sleep(2)
+    print(4)
+tasks = {
+    asyncio.ensure_future(func1()),
+    asyncio.ensure_future(func2()),
+}
+loop = asyncio.get_event_loop()
+loop.run_until_complete(asyncio.wait(tasks))
+
+# 1/3/2/4
+```
+
+### 1.2 异步编程
+
++ 事件循环
+
+> 理解为一个死循环，去检测并执行某些代码
+
+```python
+import asyncio
+# 去生成或获取一个事件循环
+loop = asyncio.get_event_loop()
+# 将任务放到'任务列表'
+loop.run_until_complete(任务)
+```
+
++ 快速上手
+
+> + 协程函数：**`async def 协程函数名`**。
+>
+> + 协程对象：**`协程函数名()`**
+>
+>   ```python
+>   async def func():
+>       print(1)
+>   result = func()
+>   ```
+>
+>   + 执行协程函数创建协程对象，函数内部代码不会执行
+>   + 如果想要运行协程函数内部代码，必须要将协程对象交给事件循环来处理
+
+```python
+import asyncio
+async def func():
+    print(1)
+result = func()
+
+#loop = asyncio.get_event_loop()
+# 将任务放到'任务列表'
+#loop.run_until_complete(result)
+
+asyncio.run(result)	# 等价于上边三行
+```
+
++ await 关键字
+
+> + await + 可等待的对象 (协程对象、Future、Task对象 ==>IO等待)
+> + await 就是等待对应的值得到结果之后再继续走下去
+
+```python
+import asyncio
+async def func():
+    print(1)
+    response = await asyncio.sleep(2)
+    print('end', response)
+asyncio.run(func())
+
+#1 / end None
+```
+
++ Task对象
+
+> + 在事件循环中添加多个任务，用于并发调度协程。
+> + 创建Task对象：**`asyncio.create_task(协程对象)`**或**`loop.create_task() / asyncio.ensure_future()`**
+
+```python
+import asyncio
+async def func():
+    print(1)
+    await asyncio.sleep(2)
+    print(2)
+    return '返回值'
+async def main():
+    print('main 开始')
+    task_list = {
+        asyncio.create_task(func(), name='n1'),
+        asyncio.create_task(func(), name='n2'),
+    }
+    print('main 结束')
+    done, pending = await asyncio.wait(task_list)
+    print(done)
+asyncio.run(main())
+"""
+main 开始
+main 结束
+1        
+1        
+2
+2
+{<Task finished name='n1' coro=<func() done, defined at c:\Users\84999\Desktop\pachong\day05\xiecheng-2.py:4> result='返回值'>, <Task finished name='n2' coro=<func() done, 
+defined at c:\Users\84999\Desktop\pachong\day05\xiecheng-2.py:4> result='返回值'>}  
+"""
+```
+
++ asyncio.Future 对象
+
+> + Task继承Future，Task对象内部await结果的处理是基于Future对象来的。
+
+```python
+import asyncio
+async def set_after(fut):
+    await asyncio.sleep(2)
+    fut.set_result('666')
+async def main():
+    # 获取当前事件循环
+    loop = asyncio.get_running_loop()
+    # 创建一个任务(Future对象)，没绑定任何行为，则这个任务永远不知道什么时候结束
+    fut = loop.create_future()
+    # 创建爱你一个任务(Task对象)。绑定了set_after函数，函数内部在2s之后会给fut赋值
+    #即手动设置future任务的最终结果，那么fut就可以结束了
+    await asyncio.create_task(set_after(fut))
+    # 等待 Future对象获取最终结果，否则一直等下去
+    data = await fut
+    print(data)
+asyncio.run(main())
+```
+
++ concurrent.futures.Future对象
+
+> + 使用线程池、进程池实现异步操作时用到的对象
+
+```python
+import time
+from concurrent.futures import Future
+from concurrent.futures.thread import ThreadPoolExecutor
+from concurrent.futures.process import ProcessPoolExecutor
+def func(val):
+    time.sleep(1)
+    print(val)
+    return 123
+# 创建线程池
+pool = ThreadPoolExecutor(max_workers=5)
+# 创建进程池
+# pool = ProcessPoolExecutor(max_workers=5)
+for i in range(10):
+    fut = pool.submit(func, i)
+    print(fut)
+```
+
+> + 之后写代码可能会存在两个Future对象交叉使用的情况
+>
+> ![](https://gitee.com/yao_zhimin/myimg/raw/master/20210121110634.png)
+>
+> ![](https://gitee.com/yao_zhimin/myimg/raw/master/20210121110932.png)
 
 ## 2. 案例
 
