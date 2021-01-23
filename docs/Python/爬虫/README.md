@@ -1061,6 +1061,10 @@ with open('day04/A.html', 'w', encoding="utf_8") as fp:
 >    2. 匿名：服务器知道使用了代理，但不知道真实的IP
 >    3. 高匿：服务器不知道使用了代理，更不知道真实的IP
 > 6. 使用方法：在headers中加入proxies参数其类型是一个字典
+>
+> \# requests.get是基于同步，必须使用基于异步的网络请求模块进行指定url的请求发送
+>
+> \# aiohttp:基于异步网络请求的模块
 
 # 五、高性能异步爬虫
 
@@ -1281,6 +1285,23 @@ for i in range(10):
 >
 > ![](https://gitee.com/yao_zhimin/myimg/raw/master/20210121110932.png)
 
+### 1.3 aiohttp模块
+
+```python
+import aiohttp
+
+async with aiohttp.ClientSession() as session:
+    # get()/post()
+    # headers--UA伪装，params/data--带数据,proxy--代理ip(字符串)
+    async with await session.get(url) as response:
+        # text() 返回字符串形式的相应数据
+        # read() 返回二进制形式的相应数据
+        # json() 返回的是json对象
+        # 获取响应数据操作之前一定要使用await进行手动挂起
+        page_text = await response.text()
+        print(page_text)
+```
+
 ## 2. 案例
 
 + 使用线程池爬取梨视频的视频数据
@@ -1347,4 +1368,63 @@ pool.join()
 ```
 
 > ![](https://gitee.com/yao_zhimin/myimg/raw/master/20210119222547.png)
+
+# 六、动态加载数据处理
+
+## 1. 基础知识
+
++ selenium模块的基本使用
+
+> + selenium模块和爬虫之间的关联：
+>   + 便捷的获取网站中动态加载的数据
+>   + 便捷实现模拟登陆
+> + 什么是selenium模块：
+>   + 基于浏览器自动化的一个模块
+
++ selenium使用流程
+
+> 1. 环境安装：pip install selenium
+> 2. 下载一个浏览器的驱动程序
+> 3. 实例化一个浏览器对象
+> 4. 编写基于浏览器自动化的操作代码
+>    1. 发起请求：get(url)
+>    2. 标签定位：find系列的方法
+>    3. 标签交互：send_keys('xxx')
+>    4. 执行js程序：execute_script('jsCode')
+>    5. 前进，后退：back(),forward()
+>    6. 关闭浏览器：quit()
+
++ selenium处理iframe
+
+> + 如果定位的标签存在于iframe标签之中，则必须使用switch_to.frame(id)
+> + 动作链(拖动)：
+>   + from selenium.webdriver import ActionChains
+>   + 实例化一个动作链对象：action = ActionChains(bro)
+>   + click_and_hold(div)：长按且点击操作
+>   + move_by_offset(x, y)
+>   + perform()让动作链立即执行
+>   + action.release()释放动作链对象
+
+## 2. 案例
+
++ 模拟登陆QQ空间
+
+```python
+from selenium import webdriver
+from time import sleep
+bro = webdriver.Edge(executable_path='day06/msedgedriver.exe')
+bro.get('https://qzone.qq.com/')
+bro.switch_to.frame('login_frame')
+a_tag = bro.find_element_by_xpath('//*[@id="switcher_plogin"]')
+a_tag.click()
+userName_tag = bro.find_element_by_xpath('//*[@id="u"]')
+userName_tag.send_keys('849995131')
+sleep(1)
+password_tag = bro.find_element_by_xpath('//*[@id="p"]')
+password_tag.send_keys('xxxxxxxxxxxx')
+login_btn = bro.find_element_by_xpath('//*[@id="login_button"]')
+login_btn.click()
+sleep(3)
+bro.quit()
+```
 
