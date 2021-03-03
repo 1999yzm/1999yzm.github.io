@@ -32,13 +32,25 @@
 
 + 代价函数（Cost function）又称平方误差代价函数（square error function）
 
-![](https://gitee.com/yao_zhimin/myimg/raw/master/20210302122825.png)
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210303150049.png)
 
 ![](https://gitee.com/yao_zhimin/myimg/raw/master/20210302124413.png)
+
+> 通过简化的代价函数可得当θ1 =1 时，取得最小值
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210302122825.png)
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210303145320.png)
 
 ![](https://gitee.com/yao_zhimin/myimg/raw/master/20210302130828.png)
 
 + 梯度下降
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210303150220.png)
+
+> 起始点选取不同会得到不同的局部最优解
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210303150639.png)
 
 > := 赋值符 a:=b(将b的值赋给a)
 >
@@ -48,13 +60,63 @@
 
 ![](https://gitee.com/yao_zhimin/myimg/raw/master/20210302132456.png)
 
-> θ0 和 θ1 同时更新
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210303152303.png)
 
-+ 房价预测
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210303152611.png)
+
+> 如果初始点已经是局部最优解，则导数为0，θ值将不再变化
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210303153057.png)
+
++ "Batch"梯度下降
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210303153756.png)
+
++ 房价预测案例
 
 ![](https://gitee.com/yao_zhimin/myimg/raw/master/20210302135314.png)
 
 ## 2.多元线性回归（linear regression with multiple features）
 
-![](https://gitee.com/yao_zhimin/myimg/raw/master/20210302160444.png)
+> Xn：不同的特征
+>
+> y：要预测的输出变量
+>
+> n：特征量的数目
+>
+> x^(i)：第i个训练样本的输入特征值
+>
+> Xj^(i)：第i个训练样本的第j个特征量的值
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210303155405.png)
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210303155747.png)
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210303155943.png)
+
++ 特征缩放（使得每个特征取值尽量接近-1~1之间）
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210303160450.png)
+
++ 均值归一化
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210303161135.png)
+
++ 学习率α
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210303161823.png)
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210303162001.png)
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210303162209.png)
+
++ 正规方程（直接一次性求解θ的最优值，不需要进行特征缩放）
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210303164025.png)
+
++ 梯度下降法和正规方程法比较
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210303165240.png)
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210303170053.png)
 
