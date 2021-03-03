@@ -3,6 +3,7 @@
 - **📖 Python**
   - [🐍 python 基础](Python/python基础/)
   - [🕷 爬虫](Python/爬虫/)
+  - [🤖 机器学习](Python/机器学习/)
   - [👨‍💻 用户画像](Python/用户画像/)
   - [📈 推荐系统](Python/推荐系统/)
 - **📖 C++**
