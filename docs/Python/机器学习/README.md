@@ -1,26 +1,34 @@
-# 一.基本概念
 
-## 1.机器学习（machine learning）的定义
+
+
+
+
+
+# 吴恩达机器学习
+
+## 一.基本概念
+
+### 1.机器学习（machine learning）的定义
 
 + Arthur Samuel：在没有明确设置的情况下，使计算机具有学习能力的研究领域。
 + Tom Mitchell：计算机程序从经验**E**中学习，解决某一任务**T**，进行某一性能标度**P**，通过**P**测定在**T**上的表现因经验E而提高。
 
 <img src="https://gitee.com/yao_zhimin/myimg/raw/master/20210302104402.png" style="zoom: 80%;" />
 
-### 1.1 监督学习（supervised learning）
+### 2 监督学习（supervised learning）
 
 + 回归问题（regression problem）：预测一个连续值输出
 + 分类问题（classification problem）：预测离散值输出![](https://gitee.com/yao_zhimin/myimg/raw/master/20210302112434.png)
 
-### 1.2 无监督学习（unsupervised learning）
+### 3 无监督学习（unsupervised learning）
 
 + 聚类算法（clustering）
 
 ![](https://gitee.com/yao_zhimin/myimg/raw/master/20210302114549.png)
 
-# 二、学习算法
+## 二、学习算法
 
-## 1.线性回归（linear regression）
+### 1.线性回归（linear regression）
 
 > m：训练样本的数量
 >
@@ -76,7 +84,7 @@
 
 ![](https://gitee.com/yao_zhimin/myimg/raw/master/20210302135314.png)
 
-## 2.多元线性回归（linear regression with multiple features）
+### 2.多元线性回归（linear regression with multiple features）
 
 > Xn：不同的特征
 >
@@ -119,4 +127,48 @@
 ![](https://gitee.com/yao_zhimin/myimg/raw/master/20210303165240.png)
 
 ![](https://gitee.com/yao_zhimin/myimg/raw/master/20210303170053.png)
+
+### 3、分类问题（Classification）
+
++ logistic function（sigmoid function）
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210304143421.png)
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210304143847.png)
+
++ logistic regression
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210304144502.png)
+
++ 决策边界（decision boundary）
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210304145029.png)
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210304145449.png)
+
+> + 决策边界不是训练集的属性，而是假设本身及其参数的属性
+>
+> + 训练集 --> θ  -->  决策边界
+
++ 代价函数
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210304151432.png)
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210304152010.png)
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210304152418.png)
+
++ 多类别分类
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210304154246.png)
+
+### 4.过拟合现象（overfitting）
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210304154909.png)
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210304155118.png)
+
++ 解决方案
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210304155454.png)
 

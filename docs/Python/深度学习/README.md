@@ -1,0 +1,52 @@
+## 1.二分分类（Binary Classification）
+
+### 1.1 逻辑回归（Logistic Regression）
+
++ Lost Function（单个训练集）
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210305144837.png)
+
++ Cost Function（全部训练集）
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210305144910.png)
+
++ 梯度下降法（Gradient Decent）
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210305145614.png)
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210305150406.png)
+
++ 计算图
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210305160623.png)
+
++ 逻辑回归的梯度下降法（Gradient descent for logistic regression）
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210305163453.png)
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210305163554.png)
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210305164215.png)
+
+> 深度学习中for循环效率低
+>
+> 通过向量化消除显示for循环
+
++ 向量化（vectorization）
+
+向量化和for循环效率对比
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210305165911.png)
+
+> 经验法则：能不用for循环就不用for循环
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210305171349.png)
+
++ 向量化logistic 回归的梯度输出
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210305172648.png)
+
++ python中的广播机制
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210305173427.png)
+
