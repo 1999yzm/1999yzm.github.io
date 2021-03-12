@@ -50,3 +50,23 @@
 
 ![](https://gitee.com/yao_zhimin/myimg/raw/master/20210305173427.png)
 
+# 2. 神经网络（neural network）
+
++ 双层神将网络（只有一个隐藏层的神经网络）
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210306101909.png)
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210306102502.png)
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210306102827.png)
+
++ 不同的激活函数
+  1. sigmoid function（二元分类的输出层使用）![](https://gitee.com/yao_zhimin/myimg/raw/master/20210306105846.png)
+  2. tanh function（几乎在所有场合都更优越）![](https://gitee.com/yao_zhimin/myimg/raw/master/20210306110034.png)
+  3. ReLu function（最常用的默认激活函数）![](https://gitee.com/yao_zhimin/myimg/raw/master/20210306110141.png)
+  4. leaky ReLu ![](https://gitee.com/yao_zhimin/myimg/raw/master/20210306110227.png)
+
++ 神经网络的梯度下降法
+
+![](https://gitee.com/yao_zhimin/myimg/raw/master/20210306113231.png)
+
